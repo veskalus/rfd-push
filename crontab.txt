@@ -1,1 +1,1 @@
-*/1 * * * * $DIRPATH/script.sh >> /var/log/script.log
+* 1 * * * $DIRPATH/script.sh 

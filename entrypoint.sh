@@ -1,5 +1,5 @@
 #!/bin/sh
 
-/usr/sbin/crond -f -l 8                   # start cron service
+echo "$(date) Starting rfd-push"
 
-#tail -f /dev/null      # keep container running
+/usr/sbin/crond -f -l 8                   # start cron service

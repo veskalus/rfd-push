@@ -1,11 +1,19 @@
 #!/usr/bin/env python
+# Script will load rfd output in json format from pulled.list file. Then will parse for new items and place into knownitems.list.
+# If there are any new items NOT in knownitems.list, it will push to pushover service
+# Ensure to provide environment API_TOKEN and USER_TOKEN. ie 'export API_TOKEN="xxxxxxxxxxxxxxx"'
+# If using docker ensure to add environment variable, ie '-e API_TOKEN='xxxxxxxxxxxxx''
 
 import os
 import json
 
 #Pushover setup
-api_token = os.environ['API_TOKEN']
-user_token = os.environ['USER_TOKEN']
+from pushover import Client
+api_token = os.environ.get('API_TOKEN')
+user_token = os.environ.get('USER_TOKEN')
+print("api token: ",api_token)
+print("user token: ",user_token)
+client = Client(user_token, api_token=api_token)
 
 #Load list of pulled items
 source_json = []
@@ -16,7 +24,6 @@ except IOError:
   f = open('pulled.list','w+')
   print("Pull file created")
   f.close
-
 
 # Load list of known items
 known_list = []
@@ -65,9 +72,18 @@ for element in source_json:
 #New item list, notify based on these:
 print ("New items:", newitems_list)
 
-#priont("Known list:", )
+#Outputting the new list nicely and push
+push_list = ""
+for element3 in newitems_list:
+  for key,value in element3.items():
+    push_list = push_list + key + " : " + str(value) + "\n"
 
-print ("Final known list:", final_list)
+if not push_list:
+  print("New deal list is empty, not notifying.")
+
+else:  
+  print ("New Deals: ", push_list)
+  client.send_message(push_list, title="New deal mentioned on RFD")
 
 #write full list including new items into the list file
 with open('knownitems.list', 'w+') as fp:
