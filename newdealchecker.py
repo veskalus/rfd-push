@@ -7,13 +7,21 @@
 import os
 import json
 
+#Discord Setup
+import discord_notify as dn
+discord_url = os.environ.get('DISCORD_URL')
+if discord_url:
+  notifier = dn.Notifier(discord_url)
+
 #Pushover setup
 from pushover import Client
 api_token = os.environ.get('API_TOKEN')
 user_token = os.environ.get('USER_TOKEN')
 print("api token: ",api_token)
 print("user token: ",user_token)
-client = Client(user_token, api_token=api_token)
+if api_token:
+  if user_token:
+    client = Client(user_token, api_token=api_token)
 
 #Load list of pulled items
 source_json = []
@@ -52,20 +60,18 @@ for element in source_json:
   urlmatch = False
   for key,value in element.items():
     if "url" in key:
-      print("scanning url:", value)
+      #print("scanning url:", value)
       # check if url matches what we already have
-
       for element2 in known_list:
         for key2,value2 in element2.items():
           if "url" in key2:
-            print("Does it match:", value2)
-
+            #print("Does it match:", value2)
             if (value in value2):
-              print("match")
+              #print("match")
               urlmatch = True
 
   if not urlmatch:
-    print("appending to new item list")
+    #print("appending to new item list")
     final_list.append(element)
     newitems_list.append(element)
 
@@ -83,7 +89,15 @@ if not push_list:
 
 else:  
   print ("New Deals: ", push_list)
-  client.send_message(push_list, title="New deal mentioned on RFD")
+
+  if api_token:
+    if user_token:
+      print("Sending pushover message.")
+      client.send_message(push_list, title="New deal mentioned on RFD")
+
+  if discord_url:
+    print("Sending discord webhook message.")  
+    notifier.send(push_list, print_message=True)
 
 #write full list including new items into the list file
 with open('knownitems.list', 'w+') as fp:

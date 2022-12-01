@@ -1,2 +1,3 @@
 rfd
 python-pushover
+discord_notify
